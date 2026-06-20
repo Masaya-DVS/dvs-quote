@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote — Diversity Voice Studio</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #FAF7F2;
+      color: #2D2D2D;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 680px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; text-align: center; }
+    .brand { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #C0392B; display: block; margin-bottom: 8px; }
+    .header h1 { font-size: 26px; font-weight: 600; color: #2D2D2D; margin-bottom: 6px; }
+    .header p { font-size: 15px; color: #666; line-height: 1.6; }
+    .card { background: #fff; border: 1px solid #E8E4DE; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; }
+    .card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #999; margin-bottom: 1.25rem; }
+    .input-row { display: flex; align-items: center; gap: 12px; }
+    .input-row label { font-size: 15px; color: #2D2D2D; flex: 1; }
+    input[type="number"] { width: 110px; font-size: 16px; padding: 8px 12px; border: 1px solid #DDD; border-radius: 8px; background: #FAF7F2; color: #2D2D2D; text-align: right; outline: none; }
+    input[type="number"]:focus { border-color: #C0392B; }
+    .hint { font-size: 12px; color: #999; margin-top: 10px; line-height: 1.6; }
+    .tier-section { margin-bottom: 1.25rem; }
+    .tier-header { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #F0EDE8; display: flex; justify-content: space-between; }
+    .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .lang-item { display: flex; align-items: center; gap: 8px; padding: 8px 6px; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
+    .lang-item:hover { background: #FAF7F2; }
+    .lang-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #C0392B; flex-shrink: 0; }
+    .lang-name { font-size: 14px; color: #2D2D2D; flex: 1; }
+    .on-req { font-size: 11px; color: #bbb; }
+    .tier-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+    .t1 { background: #EEF0FE; color: #3C3489; }
+    .t2 { background: #E6F1FB; color: #0C447C; }
+    .t3 { background: #EAF3DE; color: #27500A; }
+    .t4 { background: #FFF8EC; color: #633806; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+    .metric { background: #FAF7F2; border-radius: 8px; padding: 14px 12px; }
+    .metric-label { font-size: 11px; color: #999; margin-bottom: 4px; }
+    .metric-value { font-size: 22px; font-weight: 600; color: #2D2D2D; }
+    .payment-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F0EDE8; font-size: 14px; }
+    .payment-row:last-of-type { border-bottom: none; }
+    .payment-label { color: #666; }
+    .payment-amount { font-weight: 600; color: #2D2D2D; }
+    .min-warning { font-size: 12px; color: #9a6300; background: #FFF8EC; border: 1px solid #FAC775; border-radius: 8px; padding: 8px 12px; margin-bottom: 1rem; display: none; }
+    .note { font-size: 12px; color: #999; line-height: 1.7; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #F0EDE8; }
+    .cta { text-align: center; margin-top: 1.5rem; padding: 1.5rem; background: #2D2D2D; border-radius: 12px; color: #FAF7F2; }
+    .cta p { font-size: 14px; margin-bottom: 8px; opacity: 0.8; }
+    .cta a { color: #FAF7F2; font-weight: 600; font-size: 15px; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.4); }
+    .cta a:hover { border-bottom-color: #C0392B; }
+    .footer { text-align: center; margin-top: 1.5rem; font-size: 12px; color: #bbb; padding-bottom: 2rem; }
+    @media (max-width: 480px) {
+      .lang-grid { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <span class="brand">Diversity Voice Studio</span>
+    <h1>Instant Quote Calculator</h1>
+    <p>Professional human dubbing for YouTube creators.<br>Enter your video length and select languages below.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Step 1 — Video length</div>
+    <div class="input-row">
+      <label for="duration">Duration (minutes)</label>
+      <input type="number" id="duration" min="0" step="0.1" placeholder="e.g. 20.4">
+    </div>
+    <p class="hint">If your video has seconds: seconds ÷ 60 = decimal. Example: 20 min 24 sec → enter 20.4</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Step 2 — Select languages</div>
+    <div class="tier-section">
+      <div class="tier-header"><span>Tier 1 — Premium markets</span><span>$48 / min</span></div>
+      <div class="lang-grid" id="tier1"></div>
+    </div>
+    <div class="tier-section">
+      <div class="tier-header"><span>Tier 2 — High-value markets</span><span>$40 / min</span></div>
+      <div class="lang-grid" id="tier2"></div>
+    </div>
+    <div class="tier-section">
+      <div class="tier-header"><span>Tier 3 — Standard markets</span><span>$32 / min</span></div>
+      <div class="lang-grid" id="tier3"></div>
+    </div>
+    <div class="tier-section">
+      <div class="tier-header"><span>Tier 4 — Growth markets</span><span>$24 / min</span></div>
+      <div class="lang-grid" id="tier4"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Your quote</div>
+    <div class="summary-grid">
+      <div class="metric"><div class="metric-label">Languages selected</div><div class="metric-value" id="lang-count">0</div></div>
+      <div class="metric"><div class="metric-label">Project total</div><div class="metric-value" id="total">$0</div></div>
+      <div class="metric"><div class="metric-label">Avg. per language</div><div class="metric-value" id="per-lang">—</div></div>
+    </div>
+    <div class="min-warning" id="min-warning">Minimum order is $400 per project. Your quote has been adjusted to reflect the minimum.</div>
+    <div class="payment-row"><span class="payment-label">Deposit due now (50%)</span><span class="payment-amount" id="deposit">$0</span></div>
+    <div class="payment-row"><span class="payment-label">Balance on delivery — Net 15 (50%)</span><span class="payment-amount" id="balance">$0</span></div>
+    <p class="note">
+      Rates are per minute of finished video, per language. Rates include translation, cultural localization, professional human voice acting, and a fully mixed audio track.<br><br>
+      Payment: deposit via Wise (preferred) or Mercury ACH. Please send your transfer confirmation screenshot together with your project materials — work begins upon receipt of confirmation.<br><br>
+      Languages marked "on request": select to include — DVS will confirm availability before work begins.
+    </p>
+  </div>
+
+  <div class="cta">
+    <p>Ready to get started? Send us your project details.</p>
+    <a href="mailto:masaya@diversityvoicestudio.com">masaya@diversityvoicestudio.com</a>
+  </div>
+
+  <div class="footer">© 2026 Diversity Voice Studio LLC — New York</div>
+</div>
+
+<script>
+const LANGUAGES = [
+  { name: "English (US/UK)", tier: 1, rate: 48 },
+  { name: "French", tier: 1, rate: 48 },
+  { name: "Italian", tier: 1, rate: 48 },
+  { name: "German", tier: 1, rate: 48 },
+  { name: "Norwegian", tier: 1, rate: 48 },
+  { name: "Swedish", tier: 1, rate: 48 },
+  { name: "Japanese", tier: 2, rate: 40 },
+  { name: "Korean", tier: 2, rate: 40 },
+  { name: "Mandarin Chinese", tier: 2, rate: 40 },
+  { name: "Arabic", tier: 2, rate: 40 },
+  { name: "Spanish (Latin Am.)", tier: 3, rate: 32 },
+  { name: "Portuguese (Brazilian)", tier: 3, rate: 32 },
+  { name: "Turkish", tier: 3, rate: 32 },
+  { name: "Hindi", tier: 4, rate: 24 },
+  { name: "Indonesian (Bahasa)", tier: 4, rate: 24 },
+  { name: "Filipino (Tagalog)", tier: 4, rate: 24 },
+  { name: "Thai", tier: 4, rate: 24 },
+  { name: "Vietnamese", tier: 4, rate: 24 },
+  { name: "Malay", tier: 4, rate: 24 },
+  { name: "Kazakh", tier: 4, rate: 24, onRequest: true },
+  { name: "Urdu", tier: 4, rate: 24, onRequest: true },
+  { name: "Marathi", tier: 4, rate: 24, onRequest: true },
+  { name: "Punjabi", tier: 4, rate: 24, onRequest: true },
+  { name: "Javanese", tier: 4, rate: 24, onRequest: true },
+  { name: "Sundanese", tier: 4, rate: 24, onRequest: true },
+  { name: "Hungarian", tier: 4, rate: 24, onRequest: true },
+  { name: "Russian", tier: 4, rate: 24, onRequest: true },
+];
+
+const tierClass = { 1: "t1", 2: "t2", 3: "t3", 4: "t4" };
+
+LANGUAGES.forEach((lang, i) => {
+  const container = document.getElementById("tier" + lang.tier);
+  const label = document.createElement("label");
+  label.className = "lang-item";
+  label.innerHTML = `<input type="checkbox" data-idx="${i}"><span class="lang-name">${lang.name}${lang.onRequest ? ' <span class="on-req">(on request)</span>' : ''}</span><span class="tier-badge ${tierClass[lang.tier]}">$${lang.rate}</span>`;
+  container.appendChild(label);
+});
+
+function calc() {
+  const dur = parseFloat(document.getElementById("duration").value) || 0;
+  const checked = [...document.querySelectorAll("input[type='checkbox']:checked")];
+  const count = checked.length;
+  let rawTotal = 0;
+  checked.forEach(cb => { rawTotal += LANGUAGES[parseInt(cb.dataset.idx)].rate * dur; });
+  const MIN = 400;
+  const showMin = rawTotal > 0 && rawTotal < MIN;
+  const total = rawTotal > 0 ? Math.max(rawTotal, MIN) : 0;
+  const half = total / 2;
+  const fmt = n => n > 0 ? "$" + Math.round(n).toLocaleString("en-US") : "$0";
+  document.getElementById("lang-count").textContent = count;
+  document.getElementById("total").textContent = fmt(total);
+  document.getElementById("deposit").textContent = fmt(half);
+  document.getElementById("balance").textContent = fmt(half);
+  document.getElementById("per-lang").textContent = (count > 0 && total > 0) ? "$" + Math.round(total / count) : "—";
+  document.getElementById("min-warning").style.display = showMin ? "block" : "none";
+}
+
+document.getElementById("duration").addEventListener("input", calc);
+document.addEventListener("change", function(e) { if (e.target.type === "checkbox") calc(); });
+</script>
+</body>
+</html>
