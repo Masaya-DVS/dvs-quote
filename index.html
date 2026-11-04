@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Instant Quote — Diversity Voice Studio</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,7 +33,6 @@
     .lang-item:hover { background: #FAF7F2; }
     .lang-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #C0392B; flex-shrink: 0; }
     .lang-name { font-size: 14px; color: #2D2D2D; flex: 1; }
-    .on-req { font-size: 11px; color: #bbb; }
     .tier-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
     .t1 { background: #EEF0FE; color: #3C3489; }
     .t2 { background: #E6F1FB; color: #0C447C; }
@@ -52,6 +52,17 @@
     .cta p { font-size: 14px; margin-bottom: 8px; opacity: 0.8; }
     .cta a { color: #FAF7F2; font-weight: 600; font-size: 15px; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.4); }
     .cta a:hover { border-bottom-color: #C0392B; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; }
+    .field input, .field textarea { width: 100%; font: inherit; font-size: 15px; padding: 9px 12px; border: 1px solid #DDD; border-radius: 8px; background: #FAF7F2; color: #2D2D2D; outline: none; }
+    .field input:focus, .field textarea:focus { border-color: #C0392B; }
+    .field textarea { min-height: 80px; resize: vertical; }
+    .req { color: #C0392B; }
+    .send-btn { width: 100%; font: inherit; font-size: 15px; font-weight: 600; padding: 12px; border: none; border-radius: 8px; background: #C0392B; color: #fff; cursor: pointer; margin-top: 4px; }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .form-status { font-size: 13px; margin-top: 10px; line-height: 1.6; display: none; }
+    .form-status.ok { display: block; color: #27500A; }
+    .form-status.err { display: block; color: #C0392B; }
     .footer { text-align: center; margin-top: 1.5rem; font-size: 12px; color: #bbb; padding-bottom: 2rem; }
     @media (max-width: 480px) {
       .lang-grid { grid-template-columns: 1fr; }
@@ -79,11 +90,11 @@
   <div class="card">
     <div class="card-title">Step 2 — Select languages</div>
     <div class="tier-section">
-      <div class="tier-header"><span>Tier 1 — Premium markets</span><span>$48 / min</span></div>
+      <div class="tier-header"><span>Tier 1 — Premium markets</span><span>$53 / min</span></div>
       <div class="lang-grid" id="tier1"></div>
     </div>
     <div class="tier-section">
-      <div class="tier-header"><span>Tier 2 — High-value markets</span><span>$40 / min</span></div>
+      <div class="tier-header"><span>Tier 2 — High-value markets</span><span>$44 / min</span></div>
       <div class="lang-grid" id="tier2"></div>
     </div>
     <div class="tier-section">
@@ -107,15 +118,28 @@
     <div class="payment-row"><span class="payment-label">Deposit due now (50%)</span><span class="payment-amount" id="deposit">$0</span></div>
     <div class="payment-row"><span class="payment-label">Balance on delivery — Net 15 (50%)</span><span class="payment-amount" id="balance">$0</span></div>
     <p class="note">
+      This is an estimate. DVS will confirm your final quote after reviewing your video.<br><br>
       Rates are per minute of finished video, per language. Rates include translation, cultural localization, professional human voice acting, and a fully mixed audio track.<br><br>
-      Payment: deposit via Wise (preferred) or Mercury ACH. Please send your transfer confirmation screenshot together with your project materials — work begins upon receipt of confirmation.<br><br>
-      Languages marked "on request": select to include — DVS will confirm availability before work begins.
+      Payment: deposit via Wise (preferred) or Mercury ACH. Please send your transfer confirmation screenshot together with your project materials — work begins upon receipt of confirmation.
     </p>
   </div>
 
+  <div class="card">
+    <div class="card-title">Step 3 — Send your quote to DVS</div>
+    <form id="quote-form" novalidate>
+      <div class="field"><label for="f-name">Name <span class="req">*</span></label><input id="f-name" name="name" type="text" autocomplete="name" required></div>
+      <div class="field"><label for="f-email">Email <span class="req">*</span></label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
+      <div class="field"><label for="f-channel">YouTube channel URL</label><input id="f-channel" name="channel" type="url" placeholder="https://youtube.com/@yourchannel"></div>
+      <div class="field"><label for="f-msg">Message (optional)</label><textarea id="f-msg" name="message" placeholder="Release date, video link, questions…"></textarea></div>
+      <input type="checkbox" name="botcheck" id="f-bot" style="display:none" tabindex="-1" autocomplete="off">
+      <button type="submit" class="send-btn" id="send-btn">Send quote to DVS</button>
+      <p class="form-status" id="form-status"></p>
+    </form>
+  </div>
+
   <div class="cta">
-    <p>Ready to get started? Send us your project details.</p>
-    <a href="mailto:masaya@diversityvoicestudio.com">masaya@diversityvoicestudio.com</a>
+    <p>Have questions, or prefer to discuss your project directly? Email us anytime.</p>
+    <a href="mailto:info@diversityvoicestudio.com">info@diversityvoicestudio.com</a>
   </div>
 
   <div class="footer">© 2026 Diversity Voice Studio LLC — New York</div>
@@ -123,33 +147,45 @@
 
 <script>
 const LANGUAGES = [
-  { name: "English (US/UK)", tier: 1, rate: 48 },
-  { name: "French", tier: 1, rate: 48 },
-  { name: "Italian", tier: 1, rate: 48 },
-  { name: "German", tier: 1, rate: 48 },
-  { name: "Norwegian", tier: 1, rate: 48 },
-  { name: "Swedish", tier: 1, rate: 48 },
-  { name: "Japanese", tier: 2, rate: 40 },
-  { name: "Korean", tier: 2, rate: 40 },
-  { name: "Mandarin Chinese", tier: 2, rate: 40 },
-  { name: "Arabic", tier: 2, rate: 40 },
-  { name: "Spanish (Latin Am.)", tier: 3, rate: 32 },
+  { name: "English (US/UK)", tier: 1, rate: 53 },
+  { name: "French", tier: 1, rate: 53 },
+  { name: "German", tier: 1, rate: 53 },
+  { name: "Italian", tier: 1, rate: 53 },
+  { name: "Dutch", tier: 1, rate: 53 },
+  { name: "Norwegian", tier: 1, rate: 53 },
+  { name: "Swedish", tier: 1, rate: 53 },
+  { name: "Arabic", tier: 2, rate: 44 },
+  { name: "Japanese", tier: 2, rate: 44 },
+  { name: "Korean", tier: 2, rate: 44 },
+  { name: "Mandarin Chinese", tier: 2, rate: 44 },
+  { name: "Chinese (Traditional)", tier: 2, rate: 44 },
+  { name: "Hebrew", tier: 2, rate: 44 },
   { name: "Portuguese (Brazilian)", tier: 3, rate: 32 },
+  { name: "Spanish (Latin American)", tier: 3, rate: 32 },
   { name: "Turkish", tier: 3, rate: 32 },
+  { name: "Polish", tier: 3, rate: 32 },
+  { name: "Romanian", tier: 3, rate: 32 },
+  { name: "Filipino (Tagalog)", tier: 4, rate: 24 },
   { name: "Hindi", tier: 4, rate: 24 },
   { name: "Indonesian (Bahasa)", tier: 4, rate: 24 },
-  { name: "Filipino (Tagalog)", tier: 4, rate: 24 },
+  { name: "Malay", tier: 4, rate: 24 },
   { name: "Thai", tier: 4, rate: 24 },
   { name: "Vietnamese", tier: 4, rate: 24 },
-  { name: "Malay", tier: 4, rate: 24 },
-  { name: "Kazakh", tier: 4, rate: 24, onRequest: true },
-  { name: "Urdu", tier: 4, rate: 24, onRequest: true },
-  { name: "Marathi", tier: 4, rate: 24, onRequest: true },
-  { name: "Punjabi", tier: 4, rate: 24, onRequest: true },
-  { name: "Javanese", tier: 4, rate: 24, onRequest: true },
-  { name: "Sundanese", tier: 4, rate: 24, onRequest: true },
-  { name: "Hungarian", tier: 4, rate: 24, onRequest: true },
-  { name: "Russian", tier: 4, rate: 24, onRequest: true },
+  { name: "Bengali", tier: 4, rate: 24 },
+  { name: "Farsi", tier: 4, rate: 24 },
+  { name: "Hungarian", tier: 4, rate: 24 },
+  { name: "Javanese", tier: 4, rate: 24 },
+  { name: "Kazakh", tier: 4, rate: 24 },
+  { name: "Malayalam", tier: 4, rate: 24 },
+  { name: "Marathi", tier: 4, rate: 24 },
+  { name: "Punjabi", tier: 4, rate: 24 },
+  { name: "Russian", tier: 4, rate: 24 },
+  { name: "Sundanese", tier: 4, rate: 24 },
+  { name: "Swahili", tier: 4, rate: 24 },
+  { name: "Tamil", tier: 4, rate: 24 },
+  { name: "Telugu", tier: 4, rate: 24 },
+  { name: "Ukrainian", tier: 4, rate: 24 },
+  { name: "Urdu", tier: 4, rate: 24 },
 ];
 
 const tierClass = { 1: "t1", 2: "t2", 3: "t3", 4: "t4" };
@@ -158,13 +194,13 @@ LANGUAGES.forEach((lang, i) => {
   const container = document.getElementById("tier" + lang.tier);
   const label = document.createElement("label");
   label.className = "lang-item";
-  label.innerHTML = `<input type="checkbox" data-idx="${i}"><span class="lang-name">${lang.name}${lang.onRequest ? ' <span class="on-req">(on request)</span>' : ''}</span><span class="tier-badge ${tierClass[lang.tier]}">$${lang.rate}</span>`;
+  label.innerHTML = `<input type="checkbox" data-idx="${i}"><span class="lang-name">${lang.name}</span><span class="tier-badge ${tierClass[lang.tier]}">$${lang.rate}</span>`;
   container.appendChild(label);
 });
 
 function calc() {
   const dur = parseFloat(document.getElementById("duration").value) || 0;
-  const checked = [...document.querySelectorAll("input[type='checkbox']:checked")];
+  const checked = [...document.querySelectorAll(".lang-item input[type='checkbox']:checked")];
   const count = checked.length;
   let rawTotal = 0;
   checked.forEach(cb => { rawTotal += LANGUAGES[parseInt(cb.dataset.idx)].rate * dur; });
@@ -182,7 +218,66 @@ function calc() {
 }
 
 document.getElementById("duration").addEventListener("input", calc);
-document.addEventListener("change", function(e) { if (e.target.type === "checkbox") calc(); });
+document.addEventListener("change", function(e) { if (e.target.closest(".lang-item")) calc(); });
+
+const ACCESS_KEY = "e1cf7c19-6aef-4828-89d9-35e1a7ff701a";
+
+function quoteSummary() {
+  const dur = parseFloat(document.getElementById("duration").value) || 0;
+  const langs = [...document.querySelectorAll(".lang-item input[type='checkbox']:checked")]
+    .map(cb => LANGUAGES[parseInt(cb.dataset.idx)]);
+  return {
+    dur, langs,
+    text: langs.map(l => `${l.name} (Tier ${l.tier}, $${l.rate}/min)`).join("\n"),
+    total: document.getElementById("total").textContent,
+    deposit: document.getElementById("deposit").textContent,
+    balance: document.getElementById("balance").textContent,
+  };
+}
+
+document.getElementById("quote-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const status = document.getElementById("form-status");
+  const btn = document.getElementById("send-btn");
+  const show = (msg, ok) => { status.textContent = msg; status.className = "form-status " + (ok ? "ok" : "err"); };
+  const name = document.getElementById("f-name").value.trim();
+  const email = document.getElementById("f-email").value.trim();
+  const q = quoteSummary();
+  if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { show("Please enter your name and a valid email address.", false); return; }
+  if (q.dur <= 0 || q.langs.length === 0) { show("Please enter your video length and select at least one language above.", false); return; }
+  btn.disabled = true; btn.textContent = "Sending…";
+  const payload = {
+    access_key: ACCESS_KEY,
+    subject: `Quote request — ${name} (${q.langs.length} languages, ${q.total})`,
+    from_name: "DVS Instant Quote",
+    replyto: email,
+    name, email,
+    channel: document.getElementById("f-channel").value.trim(),
+    message: document.getElementById("f-msg").value.trim(),
+    video_length_minutes: q.dur,
+    languages: q.text,
+    project_total: q.total,
+    deposit_50: q.deposit,
+    balance_50_net15: q.balance,
+    botcheck: document.getElementById("f-bot").checked,
+  };
+  try {
+    const res = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.success) {
+      show("Thank you! Your quote has been sent. We'll get back to you soon.", true);
+      this.reset();
+      btn.textContent = "Sent";
+    } else { throw new Error(data.message || "error"); }
+  } catch (err) {
+    show("Sorry, something went wrong. Please email us directly at info@diversityvoicestudio.com.", false);
+    btn.disabled = false; btn.textContent = "Send quote to DVS";
+  }
+});
 </script>
 </body>
 </html>
