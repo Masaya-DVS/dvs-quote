@@ -75,20 +75,24 @@
   <div class="header">
     <span class="brand">Diversity Voice Studio</span>
     <h1>Instant Quote Calculator</h1>
-    <p>Professional human dubbing for YouTube creators.<br>Enter your video length and select languages below.</p>
+    <p>Professional human dubbing for YouTube creators.<br>Enter a typical video length and the languages you’re interested in<br>to see an estimated price per video.</p>
   </div>
 
   <div class="card">
-    <div class="card-title">Step 1 — Video length</div>
+    <div class="card-title">Step 1 — Your videos</div>
     <div class="input-row">
-      <label for="duration">Duration (minutes)</label>
+      <label for="duration">Typical video length (minutes)</label>
       <input type="number" id="duration" min="0" step="0.1" placeholder="e.g. 20.4">
     </div>
     <p class="hint">If your video has seconds: seconds ÷ 60 = decimal. Example: 20 min 24 sec → enter 20.4</p>
+    <div class="input-row" style="margin-top:14px">
+      <label for="per-month">Videos per month <span style="color:#999">(optional)</span></label>
+      <input type="number" id="per-month" min="0" step="1" placeholder="e.g. 4">
+    </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Step 2 — Select languages</div>
+    <div class="card-title">Step 2 — Languages you’re interested in</div>
     <div class="tier-section">
       <div class="tier-header"><span>Tier 1 — Premium markets</span><span>$53 / min</span></div>
       <div class="lang-grid" id="tier1"></div>
@@ -111,14 +115,16 @@
     <div class="card-title">Your quote</div>
     <div class="summary-grid">
       <div class="metric"><div class="metric-label">Languages selected</div><div class="metric-value" id="lang-count">0</div></div>
-      <div class="metric"><div class="metric-label">Project total</div><div class="metric-value" id="total">$0</div></div>
-      <div class="metric"><div class="metric-label">Avg. per language</div><div class="metric-value" id="per-lang">—</div></div>
+      <div class="metric"><div class="metric-label">Estimated price per video</div><div class="metric-value" id="total">$0</div></div>
+      <div class="metric"><div class="metric-label">Estimated monthly cost</div><div class="metric-value" id="monthly">—</div></div>
     </div>
-    <div class="min-warning" id="min-warning">Minimum order is $400 per project. Your quote has been adjusted to reflect the minimum.</div>
-    <div class="payment-row"><span class="payment-label">Deposit due now (50%)</span><span class="payment-amount" id="deposit">$0</span></div>
-    <div class="payment-row"><span class="payment-label">Balance on delivery — Net 15 (50%)</span><span class="payment-amount" id="balance">$0</span></div>
+    <div class="min-warning" id="len-hint">Enter your typical video length in Step 1 to see your estimate.</div>
+    <div class="min-warning" id="min-warning">The minimum is $400 per video. Your estimate has been adjusted to reflect the minimum.</div>
+    <div class="payment-row"><span class="payment-label">Deposit per video (50%)</span><span class="payment-amount" id="deposit">$0</span></div>
+    <div class="payment-row"><span class="payment-label">Balance per video on delivery — Net 15 (50%)</span><span class="payment-amount" id="balance">$0</span></div>
     <p class="note">
-      This is an estimate. DVS will confirm your final quote after reviewing your video.<br><br>
+      This is an estimate. DVS will confirm your final quote after reviewing your content.<br><br>
+      Each video is quoted and invoiced individually (50% deposit, balance Net 15, $400 minimum per video).<br><br>
       Rates are per minute of finished video, per language. Rates include translation, cultural localization, professional human voice acting, and a fully mixed audio track.<br><br>
       Payment: deposit via Wise (preferred) or Mercury ACH. Please send your transfer confirmation screenshot together with your project materials — work begins upon receipt of confirmation.
     </p>
@@ -130,7 +136,7 @@
       <div class="field"><label for="f-name">Name <span class="req">*</span></label><input id="f-name" name="name" type="text" autocomplete="name" required></div>
       <div class="field"><label for="f-email">Email <span class="req">*</span></label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
       <div class="field"><label for="f-channel">YouTube channel URL</label><input id="f-channel" name="channel" type="url" placeholder="https://youtube.com/@yourchannel"></div>
-      <div class="field"><label for="f-msg">Message (optional)</label><textarea id="f-msg" name="message" placeholder="Release date, video link, questions…"></textarea></div>
+      <div class="field"><label for="f-msg">Message (optional)</label><textarea id="f-msg" name="message" placeholder="Questions, target regions, or anything you'd like us to know…"></textarea></div>
       <input type="checkbox" name="botcheck" id="f-bot" style="display:none" tabindex="-1" autocomplete="off">
       <button type="submit" class="send-btn" id="send-btn">Send quote to DVS</button>
       <p class="form-status" id="form-status"></p>
@@ -213,11 +219,14 @@ function calc() {
   document.getElementById("total").textContent = fmt(total);
   document.getElementById("deposit").textContent = fmt(half);
   document.getElementById("balance").textContent = fmt(half);
-  document.getElementById("per-lang").textContent = (count > 0 && total > 0) ? "$" + Math.round(total / count) : "—";
+  const perMonth = parseInt(document.getElementById("per-month").value) || 0;
+  document.getElementById("monthly").textContent = (total > 0 && perMonth > 0) ? fmt(total * perMonth) : "—";
   document.getElementById("min-warning").style.display = showMin ? "block" : "none";
+  document.getElementById("len-hint").style.display = (count > 0 && dur <= 0) ? "block" : "none";
 }
 
 document.getElementById("duration").addEventListener("input", calc);
+document.getElementById("per-month").addEventListener("input", calc);
 document.addEventListener("change", function(e) { if (e.target.closest(".lang-item")) calc(); });
 
 const ACCESS_KEY = "e1cf7c19-6aef-4828-89d9-35e1a7ff701a";
@@ -229,7 +238,9 @@ function quoteSummary() {
   return {
     dur, langs,
     text: langs.map(l => `${l.name} (Tier ${l.tier}, $${l.rate}/min)`).join("\n"),
+    perMonth: parseInt(document.getElementById("per-month").value) || 0,
     total: document.getElementById("total").textContent,
+    monthly: document.getElementById("monthly").textContent,
     deposit: document.getElementById("deposit").textContent,
     balance: document.getElementById("balance").textContent,
   };
@@ -244,21 +255,23 @@ document.getElementById("quote-form").addEventListener("submit", async function(
   const email = document.getElementById("f-email").value.trim();
   const q = quoteSummary();
   if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { show("Please enter your name and a valid email address.", false); return; }
-  if (q.dur <= 0 || q.langs.length === 0) { show("Please enter your video length and select at least one language above.", false); return; }
+  if (q.dur <= 0 || q.langs.length === 0) { show("Please enter a typical video length and select at least one language above.", false); return; }
   btn.disabled = true; btn.textContent = "Sending…";
   const payload = {
     access_key: ACCESS_KEY,
-    subject: `Quote request — ${name} (${q.langs.length} languages, ${q.total})`,
+    subject: `Quote request — ${name} (${q.langs.length} languages, ${q.total}/video)`,
     from_name: "DVS Instant Quote",
     replyto: email,
     name, email,
     channel: document.getElementById("f-channel").value.trim(),
     message: document.getElementById("f-msg").value.trim(),
-    video_length_minutes: q.dur,
+    typical_video_length_minutes: q.dur,
+    videos_per_month: q.perMonth || "not specified",
     languages: q.text,
-    project_total: q.total,
-    deposit_50: q.deposit,
-    balance_50_net15: q.balance,
+    estimated_price_per_video: q.total,
+    estimated_monthly_cost: q.monthly,
+    deposit_per_video_50: q.deposit,
+    balance_per_video_net15: q.balance,
     botcheck: document.getElementById("f-bot").checked,
   };
   try {
