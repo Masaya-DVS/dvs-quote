@@ -63,6 +63,13 @@
     .form-status { font-size: 13px; margin-top: 10px; line-height: 1.6; display: none; }
     .form-status.ok { display: block; color: #27500A; }
     .form-status.err { display: block; color: #C0392B; }
+    .sub-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 6px; border-radius: 6px; cursor: pointer; }
+    .sub-option:hover { background: #FAF7F2; }
+    .sub-option input[type="radio"] { width: 16px; height: 16px; margin-top: 2px; accent-color: #C0392B; flex-shrink: 0; cursor: pointer; }
+    .sub-text { flex: 1; }
+    .sub-name { font-size: 14px; color: #2D2D2D; }
+    .sub-desc { font-size: 12px; color: #999; line-height: 1.5; margin-top: 2px; }
+    .sub-price { font-size: 12px; font-weight: 600; color: #666; white-space: nowrap; }
     .footer { text-align: center; margin-top: 1.5rem; font-size: 12px; color: #bbb; padding-bottom: 2rem; }
     @media (max-width: 480px) {
       .lang-grid { grid-template-columns: 1fr; }
@@ -112,6 +119,14 @@
   </div>
 
   <div class="card">
+    <div class="card-title">Step 3 — Subtitles (optional)</div>
+    <label class="sub-option"><input type="radio" name="subs" value="0" data-name="No Subtitles" checked><span class="sub-text"><span class="sub-name">No Subtitles</span><span class="sub-desc" style="display:block">Dubbed audio only.</span></span><span class="sub-price">Free</span></label>
+    <label class="sub-option"><input type="radio" name="subs" value="2" data-name="Script-Based Subtitles"><span class="sub-text"><span class="sub-name">Script-Based Subtitles</span><span class="sub-desc" style="display:block">Made from the localized script our voice actors record from. The wording may differ slightly from the dubbed audio, but the meaning stays the same.</span></span><span class="sub-price">$2 / min</span></label>
+    <label class="sub-option"><input type="radio" name="subs" value="6" data-name="Dub-Matched Subtitles"><span class="sub-text"><span class="sub-name">Dub-Matched Subtitles</span><span class="sub-desc" style="display:block">Match the dubbed audio word for word.</span></span><span class="sub-price">$6 / min</span></label>
+    <p class="hint">Subtitles are delivered as one SRT file per language and apply to every language you select. Prices are per minute of finished video, per language.</p>
+  </div>
+
+  <div class="card">
     <div class="card-title">Your quote</div>
     <div class="summary-grid">
       <div class="metric"><div class="metric-label">Languages selected</div><div class="metric-value" id="lang-count">0</div></div>
@@ -120,18 +135,21 @@
     </div>
     <div class="min-warning" id="len-hint">Enter your typical video length in Step 1 to see your estimate.</div>
     <div class="min-warning" id="min-warning">The minimum is $400 per video. Your estimate has been adjusted to reflect the minimum.</div>
+    <div class="payment-row"><span class="payment-label">Dubbing per video</span><span class="payment-amount" id="dub-total">$0</span></div>
+    <div class="payment-row"><span class="payment-label">Subtitles per video</span><span class="payment-amount" id="sub-total">$0</span></div>
     <div class="payment-row"><span class="payment-label">Deposit per video (50%)</span><span class="payment-amount" id="deposit">$0</span></div>
     <div class="payment-row"><span class="payment-label">Balance per video on delivery — Net 15 (50%)</span><span class="payment-amount" id="balance">$0</span></div>
     <p class="note">
       This is an estimate. DVS will confirm your final quote after reviewing your content.<br><br>
       Each video is quoted and invoiced individually (50% deposit, balance Net 15, $400 minimum per video).<br><br>
       Rates are per minute of finished video, per language. Rates include translation, cultural localization, professional human voice acting, and a fully mixed audio track.<br><br>
+      Subtitles are optional. Dub-Matched Subtitles replace Script-Based Subtitles (the two rates are not added together).<br><br>
       Payment: deposit via Wise (preferred) or Mercury ACH. Please send your transfer confirmation screenshot together with your project materials — work begins upon receipt of confirmation.
     </p>
   </div>
 
   <div class="card">
-    <div class="card-title">Step 3 — Send your quote to DVS</div>
+    <div class="card-title">Step 4 — Send your quote to DVS</div>
     <form id="quote-form" novalidate>
       <div class="field"><label for="f-name">Name <span class="req">*</span></label><input id="f-name" name="name" type="text" autocomplete="name" required></div>
       <div class="field"><label for="f-email">Email <span class="req">*</span></label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
@@ -209,7 +227,11 @@ function calc() {
   const checked = [...document.querySelectorAll(".lang-item input[type='checkbox']:checked")];
   const count = checked.length;
   let rawTotal = 0;
-  checked.forEach(cb => { rawTotal += LANGUAGES[parseInt(cb.dataset.idx)].rate * dur; });
+  let dubTotal = 0;
+  checked.forEach(cb => { dubTotal += LANGUAGES[parseInt(cb.dataset.idx)].rate * dur; });
+  const subRate = parseFloat(document.querySelector("input[name='subs']:checked").value) || 0;
+  const subTotal = subRate * dur * count;
+  rawTotal = dubTotal + subTotal;
   const MIN = 400;
   const showMin = rawTotal > 0 && rawTotal < MIN;
   const total = rawTotal > 0 ? Math.max(rawTotal, MIN) : 0;
@@ -217,6 +239,8 @@ function calc() {
   const fmt = n => n > 0 ? "$" + Math.round(n).toLocaleString("en-US") : "$0";
   document.getElementById("lang-count").textContent = count;
   document.getElementById("total").textContent = fmt(total);
+  document.getElementById("dub-total").textContent = fmt(dubTotal);
+  document.getElementById("sub-total").textContent = fmt(subTotal);
   document.getElementById("deposit").textContent = fmt(half);
   document.getElementById("balance").textContent = fmt(half);
   const perMonth = parseInt(document.getElementById("per-month").value) || 0;
@@ -227,7 +251,7 @@ function calc() {
 
 document.getElementById("duration").addEventListener("input", calc);
 document.getElementById("per-month").addEventListener("input", calc);
-document.addEventListener("change", function(e) { if (e.target.closest(".lang-item")) calc(); });
+document.addEventListener("change", function(e) { if (e.target.closest(".lang-item") || e.target.name === "subs") calc(); });
 
 const ACCESS_KEY = "e1cf7c19-6aef-4828-89d9-35e1a7ff701a";
 
@@ -238,6 +262,9 @@ function quoteSummary() {
   return {
     dur, langs,
     text: langs.map(l => `${l.name} (Tier ${l.tier}, $${l.rate}/min)`).join("\n"),
+    subtitles: (() => { const r = document.querySelector("input[name='subs']:checked"); return r.dataset.name + (r.value !== "0" ? ` ($${r.value}/min per language)` : ""); })(),
+    dubbing: document.getElementById("dub-total").textContent,
+    subtotal: document.getElementById("sub-total").textContent,
     perMonth: parseInt(document.getElementById("per-month").value) || 0,
     total: document.getElementById("total").textContent,
     monthly: document.getElementById("monthly").textContent,
@@ -268,6 +295,9 @@ document.getElementById("quote-form").addEventListener("submit", async function(
     typical_video_length_minutes: q.dur,
     videos_per_month: q.perMonth || "not specified",
     languages: q.text,
+    subtitles: q.subtitles,
+    dubbing_per_video: q.dubbing,
+    subtitles_per_video: q.subtotal,
     estimated_price_per_video: q.total,
     estimated_monthly_cost: q.monthly,
     deposit_per_video_50: q.deposit,
